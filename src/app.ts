@@ -11,12 +11,7 @@ app.get("/purchaseList/:purchaseListId", logics.readById);
 
 app.patch("/purchaseList/:purchaseListId/:itemName", logics.update);
 
-app.delete(
-  "/purchaseList/:purchaseListId/:itemName",
-  (request: Request, response: Response): Response => {
-    return response.status(200).json({ status: "ok" });
-  }
-);
+app.delete("/purchaseList/:purchaseListId/:itemName", logics.destroy);
 
 app.delete(
   "/purchaseList/:purchaseListId",

@@ -64,4 +64,26 @@ const update = (request: Request, response: Response): Response => {
   return response.status(200).json(database);
 };
 
-export default { create, read, readById, update };
+const destroy = (request: Request, response: Response): Response => {
+  const { purchaseListId, itemName } = request.params;
+
+  const foundPurchase = database.find(
+    (purchase) =>
+      purchase.id === parseInt(purchaseListId) &&
+      purchase.data.find((purchase) => purchase.name === itemName)
+  );
+
+  if (!foundPurchase) {
+    const error = " Purchase id not found";
+    return response.status(404).json(error);
+  }
+
+  const itemIndex = database.findIndex((purchase) =>
+    purchase.data.map((item) => item.name === itemName)
+  );
+
+  database.map((item) => item.data.splice(itemIndex + 1, 1));
+
+  return response.status(201).json(database);
+};
+export default { create, read, readById, update, destroy };
