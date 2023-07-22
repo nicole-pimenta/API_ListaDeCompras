@@ -59,7 +59,7 @@ const validateData = (payload: any): IPurchaseList => {
 
 const create = (request: Request, response: Response): Response => {
   try {
-    const validatedData: IPurchaseList = validateData(request.body);
+    validateData(request.body);
 
     const newPurchaseList: IPurchaseList = {
       id: getNextId(),
@@ -72,7 +72,6 @@ const create = (request: Request, response: Response): Response => {
     if (error instanceof Error) {
       return response.status(400).json({ message: error.message });
     }
-    console.log(error);
     return response.status(500).json({ message: error });
   }
 };
@@ -89,8 +88,8 @@ const readById = (request: Request, response: Response): Response => {
   );
 
   if (!foundPurchase) {
-    const error = " Purchase id not found";
-    return response.status(404).json(error);
+    const message = `List with id ${purchaseListId} does not exist`;
+    return response.status(404).json({ message });
   }
 
   return response.status(200).json(foundPurchase);
