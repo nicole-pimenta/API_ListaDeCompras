@@ -12,6 +12,14 @@ interface IPurchaseList {
 type TPurchaseListRequest = Omit<IPurchaseList, "id">;
 
 //serializando dados
-type TPurchaseRequiredKeys = "listName" | "data";
+type TPurchaseRequiredFields = "listName" | "data";
 
-export { IPurchaseList, TPurchaseListRequest, TPurchaseRequiredKeys };
+type TPurchaseRequiredDataFields = "name" | "quantity";
+
+export {
+  IPurchaseList,
+  TPurchaseListRequest,
+  TPurchaseRequiredFields,
+  TPurchaseRequiredDataFields,
+  IPurchaseItens,
+};

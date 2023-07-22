@@ -12,3 +12,8 @@ Criar uma nova lista de compras:
 - entrada inválida - Objeto de mensagem - 400 BAD REQUEST
 
 - tipo do valor de entrada inválido - Objeto de mensagem - 400 BAD REQUEST
+
+GET/purchaseList -
+Retorna todas as listas de compras:
+
+- sucesso - Array de objetos de lista - 200 OK

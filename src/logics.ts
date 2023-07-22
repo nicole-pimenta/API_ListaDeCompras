@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import database from "./database";
-import { IPurchaseList, TPurchaseRequiredKeys } from "./interface";
+import {
+  IPurchaseList,
+  TPurchaseRequiredFields,
+  TPurchaseRequiredDataFields,
+} from "./interface";
 
 const getNextId = (): number => {
   const lastItem = database.sort((a, b) => a.id - b.id).at(-1);
@@ -9,39 +13,51 @@ const getNextId = (): number => {
   return lastItem.id + 1;
 };
 
-const validateData = (payload: any): IPurchaseList => {
+function hasRequiredDataFields(payload: any) {
+  const requiredDataFields: TPurchaseRequiredDataFields[] = [
+    "name",
+    "quantity",
+  ];
+
+  let output = true;
+
+  payload.data.map((item: any) => {
+    const DataKeys = Object.keys(item);
+    output = DataKeys.every((item: any) => requiredDataFields.includes(item));
+  });
+
+  return output;
+}
+
+function hasRequiredFields(payload: any) {
   const payloadKeys: string[] = Object.keys(payload);
-  const payloadValues = Object.values(payload);
-  const requiredKeys: TPurchaseRequiredKeys[] = ["listName", "data"];
+  const requiredFields: TPurchaseRequiredFields[] = ["listName", "data"];
+
+  return payloadKeys.every((key: any) => requiredFields.includes(key));
+}
+
+function hasRequiredFieldsTypes(payload: any) {
+  const payloadValues: string[] = Object.values(payload);
+
   const requiredTypes: string[] = ["string", "object"];
 
-  const hasRequiredKeys: boolean = requiredKeys.every((key: string) =>
-    payloadKeys.includes(key)
-  );
+  return payloadValues.every((item) => requiredTypes.includes(typeof item));
+}
 
-  const hasExclusiveRequiredKeys = payloadKeys.every((item: any) =>
-    requiredKeys.includes(item)
-  );
-
-  const hasRequiredType = payloadValues.every((item) =>
-    requiredTypes.includes(typeof item)
-  );
-
-  if (!hasRequiredKeys || !hasExclusiveRequiredKeys) {
-    const joinedKeys: string = requiredKeys.join(", ");
-    throw new Error(`Required keys are: ${joinedKeys}`);
+const validateData = (payload: any): IPurchaseList => {
+  if (!hasRequiredFields(payload)) {
+    throw new Error("Required fields are:'listName' and 'Data'");
   }
-  if (!hasRequiredType) {
-    const joinedTypes: string = requiredTypes.join(", ");
-    throw new Error(`Required types are: ${joinedTypes}`);
+  if (!hasRequiredDataFields(payload)) {
+    throw new Error("Required fields are:'name' and 'quantity'");
   }
-
+  if (!hasRequiredFieldsTypes(payload)) {
+    throw new Error("The list name need to be a string");
+  }
   return payload;
 };
 
 const create = (request: Request, response: Response): Response => {
-  // const payload = request.body;
-
   try {
     const validatedData: IPurchaseList = validateData(request.body);
 
