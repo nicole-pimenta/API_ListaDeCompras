@@ -58,6 +58,9 @@ const update = (request: Request, response: Response): Response => {
   try {
     const { purchaseListId, itemName } = request.params;
     const payload: IPurchaseItens = request.body;
+    const itemIndex = database.findIndex((purchase) =>
+      purchase.data.map((item) => item.name === itemName)
+    );
 
     hasListExists(purchaseListId);
     hasItemExists(itemName);
@@ -71,9 +74,6 @@ const update = (request: Request, response: Response): Response => {
       const message = 'Updatable fields are: "name" and "quantity"';
       return response.status(400).json({ message });
     }
-    const itemIndex = database.findIndex((purchase) =>
-      purchase.data.map((item) => item.name === itemName)
-    );
 
     database.map((item) => item.data.splice(itemIndex, 1, payload));
 
@@ -87,50 +87,40 @@ const update = (request: Request, response: Response): Response => {
 };
 
 const destroy = (request: Request, response: Response): Response => {
-  const { purchaseListId, itemName } = request.params;
+  try {
+    const { purchaseListId, itemName } = request.params;
+    hasListExists(purchaseListId);
+    hasItemExists(itemName);
+    const itemIndex = database.findIndex((purchase) =>
+      purchase.data.map((item) => item.name === itemName)
+    );
 
-  const foundList = database.find(
-    (purchase) => purchase.id === parseInt(purchaseListId)
-  );
-  const foundItem = database.find((purchase) =>
-    purchase.data.find((purchase) => purchase.name === itemName)
-  );
+    database.map((item) => item.data.splice(itemIndex + 1, 1));
 
-  if (!foundList) {
-    const message = ` List with id ${purchaseListId} does not exist`;
-    return response.status(404).json({ message });
+    return response.status(204).json();
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return response.status(404).json({ message: error.message });
+    }
+    return response.status(500).json({ message: error });
   }
-  if (!foundItem) {
-    const message = ` Item with id ${itemName} does not exist`;
-    return response.status(404).json({ message });
-  }
-
-  const itemIndex = database.findIndex((purchase) =>
-    purchase.data.map((item) => item.name === itemName)
-  );
-
-  database.map((item) => item.data.splice(itemIndex + 1, 1));
-
-  return response.status(204).json();
 };
 
 const destroyList = (request: Request, response: Response): Response => {
-  const { purchaseListId } = request.params;
-  const itemIndex = database.findIndex(
-    (purchase) => purchase.id === parseInt(purchaseListId)
-  );
+  try {
+    const { purchaseListId } = request.params;
+    const listIndex = database.findIndex(
+      (purchase) => purchase.id === parseInt(purchaseListId)
+    );
+    hasListExists(purchaseListId);
+    database.splice(listIndex, 1);
 
-  const foundList = database.find(
-    (purchase) => purchase.id === parseInt(purchaseListId)
-  );
-
-  if (!foundList) {
-    const message = ` List with id ${purchaseListId} does not exist`;
-    return response.status(404).json({ message });
+    return response.status(204).json();
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return response.status(404).json({ message: error.message });
+    }
+    return response.status(500).json({ message: error });
   }
-
-  database.splice(itemIndex, 1);
-
-  return response.status(204).json();
 };
 export default { create, read, readById, update, destroy, destroyList };
