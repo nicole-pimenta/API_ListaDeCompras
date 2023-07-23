@@ -5,7 +5,7 @@ const hasListExists = (
   request: Request,
   response: Response,
   next: NextFunction
-) => {
+): Response | void => {
   const { purchaseListId } = request.params;
   const foundList = database.find(
     (list) => list.id === parseInt(purchaseListId)
@@ -28,7 +28,7 @@ const hasItemExists = (
   request: Request,
   response: Response,
   next: NextFunction
-) => {
+): Response | void => {
   const { itemName } = request.params;
   const foundItem = database.find((list) =>
     list.data.find((dataItem) => dataItem.name === itemName)
