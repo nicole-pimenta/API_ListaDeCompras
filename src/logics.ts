@@ -3,6 +3,7 @@ import database from "./database";
 import {
   IPurchaseItens,
   IPurchaseList,
+  TPurchaseItensUpdate,
   TPurchaseListRequest,
 } from "./interface";
 
@@ -11,8 +12,6 @@ import {
   hasRequiredFields,
   hasListNameRequiredType,
   hasRequiredDataFields,
-  hasListExists,
-  hasItemExists,
   hasRequiredDataTypes,
 } from "./function";
 
@@ -43,8 +42,8 @@ const read = (request: Request, response: Response): Response => {
 
 const readById = (request: Request, response: Response): Response => {
   try {
-    const { purchaseListId } = request.params;
-    const foundList = hasListExists(purchaseListId);
+    const { foundList } = response.locals;
+
     return response.status(200).json(foundList);
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -56,14 +55,11 @@ const readById = (request: Request, response: Response): Response => {
 
 const update = (request: Request, response: Response): Response => {
   try {
-    const { purchaseListId, itemName } = request.params;
+    const { itemName } = request.params;
     const payload: IPurchaseItens = request.body;
     const itemIndex = database.findIndex((purchase) =>
       purchase.data.map((item) => item.name === itemName)
     );
-
-    hasListExists(purchaseListId);
-    hasItemExists(itemName);
 
     if (!hasRequiredDataTypes(payload)) {
       const message = 'The list name need to be a string"';
@@ -89,8 +85,7 @@ const update = (request: Request, response: Response): Response => {
 const destroy = (request: Request, response: Response): Response => {
   try {
     const { purchaseListId, itemName } = request.params;
-    hasListExists(purchaseListId);
-    hasItemExists(itemName);
+
     const itemIndex = database.findIndex((purchase) =>
       purchase.data.map((item) => item.name === itemName)
     );
@@ -112,7 +107,7 @@ const destroyList = (request: Request, response: Response): Response => {
     const listIndex = database.findIndex(
       (purchase) => purchase.id === parseInt(purchaseListId)
     );
-    hasListExists(purchaseListId);
+
     database.splice(listIndex, 1);
 
     return response.status(204).json();

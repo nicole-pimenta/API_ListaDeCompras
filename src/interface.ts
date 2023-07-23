@@ -16,10 +16,13 @@ type TPurchaseRequiredFields = "listName" | "data";
 
 type TPurchaseRequiredDataFields = "name" | "quantity";
 
+type TPurchaseItensUpdate = Partial<IPurchaseItens>;
+
 export {
   IPurchaseList,
   TPurchaseListRequest,
   TPurchaseRequiredFields,
   TPurchaseRequiredDataFields,
   IPurchaseItens,
+  TPurchaseItensUpdate,
 };

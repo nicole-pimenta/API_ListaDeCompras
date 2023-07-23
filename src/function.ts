@@ -1,6 +1,7 @@
 import database from "./database";
 import {
   IPurchaseItens,
+  TPurchaseItensUpdate,
   TPurchaseListRequest,
   TPurchaseRequiredDataFields,
   TPurchaseRequiredFields,
@@ -48,31 +49,9 @@ function hasListNameRequiredType(payload: TPurchaseListRequest) {
   }
 }
 
-function hasListExists(listId: string) {
-  const foundList = database.find((list) => list.id === parseInt(listId));
-
-  if (!foundList) {
-    const message = `List with id ${listId} does not exist`;
-    throw new Error(message);
-  }
-
-  return foundList;
-}
-
-function hasItemExists(ItemName: string) {
-  const foundItem = database.find((list) =>
-    list.data.find((dataItem) => dataItem.name === ItemName)
-  );
-
-  if (!foundItem) {
-    const message = `Item ${ItemName} does not exist`;
-    throw new Error(message);
-  }
-
-  return foundItem;
-}
-
-function hasRequiredDataTypes(payload: IPurchaseItens): boolean {
+function hasRequiredDataTypes(
+  payload: IPurchaseItens | TPurchaseItensUpdate
+): boolean {
   const payloadValues: string[] = Object.values(payload);
   const requiredTypes: string[] = ["string"];
 
@@ -95,6 +74,4 @@ export {
   hasListNameRequiredType,
   hasRequiredDataTypes,
   hasRequiredDataFields,
-  hasListExists,
-  hasItemExists,
 };
