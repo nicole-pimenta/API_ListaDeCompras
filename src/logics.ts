@@ -1,29 +1,30 @@
 import { Request, Response } from "express";
 import database from "./database";
-import { IPurchaseList, TPurchaseRequiredDataFields } from "./interface";
+import {
+  IPurchaseItens,
+  IPurchaseList,
+  TPurchaseListRequest,
+} from "./interface";
 
 import {
   getNextId,
   hasRequiredFields,
-  hasRequiredFieldsTypes,
-  hasRequiredValuesTypesUpdate,
-  hasRequiredDataFieldsUpdate,
+  hasListNameRequiredType,
+  hasRequiredDataFields,
+  hasListExists,
+  hasItemExists,
+  hasRequiredDataTypes,
 } from "./function";
-
-const validateData = (payload: any): IPurchaseList => {
-  hasRequiredFields(payload);
-
-  hasRequiredFieldsTypes(payload);
-  return payload;
-};
 
 const create = (request: Request, response: Response): Response => {
   try {
-    validateData(request.body);
+    const payload: TPurchaseListRequest = request.body;
+    hasRequiredFields(payload);
+    hasListNameRequiredType(payload);
 
     const newPurchaseList: IPurchaseList = {
       id: getNextId(),
-      ...request.body,
+      ...payload,
     };
 
     database.push(newPurchaseList);
@@ -43,16 +44,7 @@ const read = (request: Request, response: Response): Response => {
 const readById = (request: Request, response: Response): Response => {
   try {
     const { purchaseListId } = request.params;
-
-    const foundList = database.find(
-      (purchase) => purchase.id === parseInt(purchaseListId)
-    );
-
-    if (!foundList) {
-      const message = ` List with id ${purchaseListId} does not exist`;
-      return response.status(404).json({ message });
-    }
-
+    const foundList = hasListExists(purchaseListId);
     return response.status(200).json(foundList);
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -65,37 +57,23 @@ const readById = (request: Request, response: Response): Response => {
 const update = (request: Request, response: Response): Response => {
   try {
     const { purchaseListId, itemName } = request.params;
-    const payload = request.body;
+    const payload: IPurchaseItens = request.body;
 
-    const foundList = database.find(
-      (purchase) => purchase.id === parseInt(purchaseListId)
-    );
-    const foundItem = database.find((purchase) =>
-      purchase.data.find((purchase) => purchase.name === itemName)
-    );
+    hasListExists(purchaseListId);
+    hasItemExists(itemName);
 
-    if (!foundList) {
-      const message = ` List with id ${purchaseListId} does not exist`;
-      return response.status(404).json({ message });
-    }
-    if (!foundItem) {
-      const message = ` Item with id ${itemName} does not exist`;
-      return response.status(404).json({ message });
-    }
-
-    const itemIndex = database.findIndex((purchase) =>
-      purchase.data.map((item) => item.name === itemName)
-    );
-
-    if (!hasRequiredDataFieldsUpdate(payload)) {
-      const message = 'Updatable fields are: "name" and "quantity"';
-      return response.status(400).json({ message });
-    }
-
-    if (!hasRequiredValuesTypesUpdate(payload)) {
+    if (!hasRequiredDataTypes(payload)) {
       const message = 'The list name need to be a string"';
       return response.status(400).json({ message });
     }
+
+    if (!hasRequiredDataFields(payload)) {
+      const message = 'Updatable fields are: "name" and "quantity"';
+      return response.status(400).json({ message });
+    }
+    const itemIndex = database.findIndex((purchase) =>
+      purchase.data.map((item) => item.name === itemName)
+    );
 
     database.map((item) => item.data.splice(itemIndex, 1, payload));
 

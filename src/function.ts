@@ -1,10 +1,11 @@
 import database from "./database";
 import {
+  IPurchaseItens,
+  TPurchaseListRequest,
   TPurchaseRequiredDataFields,
   TPurchaseRequiredFields,
 } from "./interface";
 
-//1. Função para buscar o próximo id
 const getNextId = (): number => {
   const lastItem = database.sort((a, b) => a.id - b.id).at(-1);
 
@@ -12,9 +13,7 @@ const getNextId = (): number => {
   return lastItem.id + 1;
 };
 
-//2.Função para verificar se os campos requeridos são passados
-
-function hasRequiredFields(payload: any) {
+function hasRequiredFields(payload: TPurchaseListRequest) {
   //1.verificando: ListName + Data
   const payloadKeys: string[] = Object.keys(payload);
   const requiredFields: TPurchaseRequiredFields[] = ["listName", "data"];
@@ -43,50 +42,44 @@ function hasRequiredFields(payload: any) {
   }
 }
 
-function hasRequiredFieldsTypes(payload: any) {
-  const payloadValues: string[] = Object.values(payload);
-
-  const requiredTypes: string[] = ["string", "object"];
-
-  const verify = payloadValues.every((item) =>
-    requiredTypes.includes(typeof item)
-  );
-
-  if (!verify) {
+function hasListNameRequiredType(payload: TPurchaseListRequest) {
+  if (typeof payload.listName !== "string") {
     throw new Error("The list name need to be a string");
   }
 }
 
-// function hasListExists(listId: any) {
-//   const foundList = database.find(
-//     (purchase) => purchase.id === parseInt(listId)
-//   );
+function hasListExists(listId: string) {
+  const foundList = database.find((list) => list.id === parseInt(listId));
 
-//   if (!foundList) {
-//     const message = `List with id ${listId} does not exist`;
-//     throw new Error(message);
-//   }
-// }
+  if (!foundList) {
+    const message = `List with id ${listId} does not exist`;
+    throw new Error(message);
+  }
 
-// function hasListItemExists(purchaseItemId: any) {
-//   const foundItem = database.find((list) =>
-//     list.data.find((purchase) => purchase.name === purchaseItemId)
-//   );
+  return foundList;
+}
 
-//   if (!foundItem) {
-//     const message = `Item ${purchaseItemId} does not exist`;
-//     throw new Error(message);
-//   }
-// }
-function hasRequiredValuesTypesUpdate(payload: any) {
+function hasItemExists(ItemName: string) {
+  const foundItem = database.find((list) =>
+    list.data.find((dataItem) => dataItem.name === ItemName)
+  );
+
+  if (!foundItem) {
+    const message = `Item ${ItemName} does not exist`;
+    throw new Error(message);
+  }
+
+  return foundItem;
+}
+
+function hasRequiredDataTypes(payload: IPurchaseItens): boolean {
   const payloadValues: string[] = Object.values(payload);
-
   const requiredTypes: string[] = ["string"];
 
   return payloadValues.every((item) => requiredTypes.includes(typeof item));
 }
 
-function hasRequiredDataFieldsUpdate(payload: any) {
+function hasRequiredDataFields(payload: any) {
   const requiredDataFields: TPurchaseRequiredDataFields[] = [
     "name",
     "quantity",
@@ -99,7 +92,9 @@ function hasRequiredDataFieldsUpdate(payload: any) {
 export {
   getNextId,
   hasRequiredFields,
-  hasRequiredFieldsTypes,
-  hasRequiredValuesTypesUpdate,
-  hasRequiredDataFieldsUpdate,
+  hasListNameRequiredType,
+  hasRequiredDataTypes,
+  hasRequiredDataFields,
+  hasListExists,
+  hasItemExists,
 };
