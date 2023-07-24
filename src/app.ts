@@ -8,31 +8,24 @@ app.post("/purchaseList", logics.create);
 
 app.get("/purchaseList", logics.read);
 
-app.get(
-  "/purchaseList/:purchaseListId",
-  middlewares.hasListExists,
-  logics.readById
-);
+app.use("/purchaseList/:purchaseListId", middlewares.hasListExists);
+
+app.get("/purchaseList/:purchaseListId", logics.readById);
 
 app.patch(
   "/purchaseList/:purchaseListId/:itemName",
-  middlewares.hasListExists,
+
   middlewares.hasItemExists,
   logics.update
 );
 
 app.delete(
   "/purchaseList/:purchaseListId/:itemName",
-  middlewares.hasListExists,
   middlewares.hasItemExists,
   logics.destroy
 );
 
-app.delete(
-  "/purchaseList/:purchaseListId",
-  middlewares.hasListExists,
-  logics.destroyList
-);
+app.delete("/purchaseList/:purchaseListId", logics.destroyList);
 
 const PORT: number = 3000;
 app.listen(PORT, () =>
